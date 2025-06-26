@@ -21,9 +21,7 @@ const nextConfig: NextConfig = {
   },
   // Production optimizations
   output: 'standalone',
-  experimental: {
-    serverComponentsExternalPackages: ['@mendable/firecrawl-js'],
-  },
+  serverExternalPackages: ['@mendable/firecrawl-js'],
 };
 
 export default nextConfig;
