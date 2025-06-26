@@ -180,5 +180,3 @@ We welcome contributions! Please feel free to submit a Pull Request.
 ## Support
 
 For questions and issues, please open an issue in this repository.
-#   c l e a r i n g h o u s e - c h a t b o t - s e r v e r  
- 
