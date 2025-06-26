@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: clearinghouse-chatbot
+    env: node
+    rootDir: ./Server
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_URL
+        value: https://clearinghouse-chatbot.onrender.com
+    healthCheckPath: /api/check-env 
