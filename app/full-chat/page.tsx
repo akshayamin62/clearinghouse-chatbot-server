@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { Send, User, Bot, Phone, Mail, UserIcon } from 'lucide-react';
+import { Send, User, Bot, Phone, UserIcon } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -187,7 +187,7 @@ Keep responses informative but concise (under 100 words when possible).`
         body: JSON.stringify({
           model: 'firecrawl-www-clearinghousecdfi-com-1751034876204',
           messages: apiMessages,
-          max_tokens: 150,
+          max_tokens: 10,
           temperature: 0.7
         })
       });
