@@ -76,7 +76,7 @@ export default function ChatWidgetPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'firecrawl-www-clearinghousecdfi-com-1751031045138',
+          model: 'firecrawl-www-clearinghousecdfi-com-1751034876204',
           messages: newMessages,
           stream: false
         })
