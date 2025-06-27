@@ -14,30 +14,28 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const index: IndexMetadata = await request.json()
-    await saveIndex(index)
+    const indexData: IndexMetadata = await request.json()
+    await saveIndex(indexData)
     return NextResponse.json({ success: true })
-  } catch {
-    // Return success anyway to allow app to continue
-    console.error('Failed to save index')
-    return NextResponse.json({ success: true, warning: 'Index saved locally only' })
+  } catch (error) {
+    console.error('Failed to save index:', error)
+    return NextResponse.json(
+      { error: 'Failed to save index' },
+      { status: 500 }
+    )
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const namespace = searchParams.get('namespace')
-    
-    if (!namespace) {
-      return NextResponse.json({ error: 'Namespace is required' }, { status: 400 })
-    }
-    
+    const { namespace } = await request.json()
     await deleteIndex(namespace)
     return NextResponse.json({ success: true })
-  } catch {
-    // Return success anyway to allow app to continue
-    console.error('Failed to delete index')
-    return NextResponse.json({ success: true, warning: 'Index deleted locally only' })
+  } catch (error) {
+    console.error('Failed to delete index:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete index' },
+      { status: 500 }
+    )
   }
 }
