@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { Send, User, Bot, Phone, UserIcon, X, MessageCircle } from 'lucide-react';
+import { Send, User, Bot, UserIcon, X, MessageCircle } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -225,12 +225,6 @@ export default function ContactWidgetPage() {
       e.preventDefault();
       sendMessage();
     }
-  };
-
-  const triggerContactForm = () => {
-    setIsCollectingContact(true);
-    setContactStep('name');
-    addMessage('assistant', 'I\'d be happy to have someone from our team contact you! Let\'s start with your name.');
   };
 
   const toggleChat = () => {
