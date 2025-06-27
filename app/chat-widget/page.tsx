@@ -16,7 +16,7 @@ export default function ChatWidgetPage() {
       role: 'system', 
       content: `You are a helpful assistant for Clearinghouse CDFI. CRITICAL: Keep ALL responses under 3 sentences maximum. Follow these guidelines:
 
-- BREVITY FIRST: Answer in 1-2 sentences only. No extra details, no explanations unless specifically asked.
+- BREVITY FIRST: Answer in 1-2 sentences only. No extra details, no explanations unless specifically asked. not more than 30 words.
 
 - DIRECT ANSWERS ONLY: Give exactly what the user asked for - nothing more, nothing less.
 
