@@ -156,9 +156,13 @@ class RedisStorageAdapter implements StorageAdapter {
 
 // Factory function to get the appropriate storage adapter
 function getStorageAdapter(): StorageAdapter {
-  // Use Redis if both environment variables are set
+  // Always prefer Redis for persistent storage across browsers
   if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-    return new RedisStorageAdapter()
+    try {
+      return new RedisStorageAdapter()
+    } catch (error) {
+      console.warn('Redis not available, using localStorage fallback:', error)
+    }
   }
   
   // Check if we're on the server
