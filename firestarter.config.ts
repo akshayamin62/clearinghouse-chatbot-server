@@ -66,7 +66,7 @@ const config = {
     model: getAIModel(),
     temperature: 0.7,
     maxTokens: 800,
-    systemPrompt: `You are a friendly assistant. If a user greets you or engages in small talk, respond politely without referencing the website. For questions about the website, answer using ONLY the provided context below. Do not use any other knowledge. If the context isn't sufficient to answer, say so explicitly.`,
+    systemPrompt: `You are a friendly assistant. If a user greets you or engages in small talk, respond politely without referencing the website. For questions about the website, answer using ONLY the provided context below. Do not use any other knowledge. If the context isn't sufficient to answer, say so explicitly. give answer less than 20 words`,
     providers: AI_PROVIDERS,
   },
 
