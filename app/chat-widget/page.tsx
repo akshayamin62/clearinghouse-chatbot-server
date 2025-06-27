@@ -54,13 +54,13 @@ export default function ChatWidgetPage() {
     setIsTyping(true);
 
     try {
-      const response = await fetch('/api/v1/chat/completions', {
+      const response = await fetch('https://clearinghouse-chatbot-server.vercel.app/api/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'firecrawl-www-clearinghousecdfi-com-1751001570474',
+          model: 'firecrawl-www-clearinghousecdfi-com-1751031045138',
           messages: newMessages,
           stream: false
         })
