@@ -7,6 +7,13 @@ import remarkGfm from 'remark-gfm';
 interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
+  isContactForm?: boolean;
+}
+
+interface ContactInfo {
+  name: string;
+  email: string;
+  phone: string;
 }
 
 export default function ChatWidgetPage() {
@@ -14,21 +21,20 @@ export default function ChatWidgetPage() {
   const [messages, setMessages] = useState<Message[]>([
     { 
       role: 'system', 
-      content: `You are a helpful assistant for Clearinghouse CDFI. CRITICAL: Keep ALL responses under 3 sentences maximum. Follow these guidelines:
+      content: `You are a Clearinghouse CDFI assistant. CRITICAL RULES:
 
-- BREVITY FIRST: Answer in 1-2 sentences only. No extra details, no explanations unless specifically asked. not more than 30 words.
+1. MAXIMUM 15 WORDS per response
+2. ONE sentence only
+3. No explanations, no extra details
+4. Direct answer only
 
-- DIRECT ANSWERS ONLY: Give exactly what the user asked for - nothing more, nothing less.
+For contact requests, say: "I'll connect you with our team! Please provide your contact information."
 
-- Use simple, basic language and be positive.
+For unknown topics: "I'll have someone reach out."
 
-- Stay focused on Clearinghouse CDFI topics only.
+For off-topic: "I only help with Clearinghouse CDFI."
 
-- If unsure, say "I'll have someone reach out to discuss this further."
-
-- For unrelated questions, politely redirect: "I can only help with Clearinghouse CDFI questions."
-
-REMEMBER: Maximum 3 sentences per response. Be direct and concise.` 
+STRICT LIMIT: 15 words maximum!` 
     },
     { 
       role: 'assistant', 
@@ -37,6 +43,9 @@ REMEMBER: Maximum 3 sentences per response. Be direct and concise.`
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isCollectingContact, setIsCollectingContact] = useState(false);
+  const [contactStep, setContactStep] = useState<'name' | 'email' | 'phone' | 'complete'>('name');
+  const [contactInfo, setContactInfo] = useState<ContactInfo>({ name: '', email: '', phone: '' });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -58,8 +67,66 @@ REMEMBER: Maximum 3 sentences per response. Be direct and concise.`
     }
   };
 
+  const handleContactCollection = (userInput: string) => {
+    const trimmedInput = userInput.trim();
+    
+    if (contactStep === 'name') {
+      setContactInfo(prev => ({ ...prev, name: trimmedInput }));
+      setContactStep('email');
+      setMessages(prev => [...prev, 
+        { role: 'user', content: trimmedInput },
+        { role: 'assistant', content: `Thanks ${trimmedInput}! What's your email address?` }
+      ]);
+    } else if (contactStep === 'email') {
+      setContactInfo(prev => ({ ...prev, email: trimmedInput }));
+      setContactStep('phone');
+      setMessages(prev => [...prev, 
+        { role: 'user', content: trimmedInput },
+        { role: 'assistant', content: 'Great! And your phone number?' }
+      ]);
+    } else if (contactStep === 'phone') {
+      const finalContactInfo = { ...contactInfo, phone: trimmedInput };
+      
+      setContactInfo(prev => ({ ...prev, phone: trimmedInput }));
+      setContactStep('complete');
+      setIsCollectingContact(false);
+      
+      // Send contact info to API
+      fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(finalContactInfo)
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Contact submission successful:', data);
+      })
+      .catch(error => {
+        console.error('Error submitting contact info:', error);
+      });
+      
+      setMessages(prev => [...prev, 
+        { role: 'user', content: trimmedInput },
+        { role: 'assistant', content: 'Perfect! Our team will contact you soon. Anything else I can help with?' }
+      ]);
+      
+      // Reset contact collection
+      setContactInfo({ name: '', email: '', phone: '' });
+      setContactStep('name');
+    }
+  };
+
   const sendMessage = async () => {
     if (!inputValue.trim()) return;
+
+    // Handle contact information collection
+    if (isCollectingContact) {
+      handleContactCollection(inputValue);
+      setInputValue('');
+      return;
+    }
 
     const userMessage: Message = { role: 'user', content: inputValue.trim() };
     const newMessages = [...messages, userMessage];
@@ -77,7 +144,7 @@ REMEMBER: Maximum 3 sentences per response. Be direct and concise.`
           model: 'firecrawl-www-clearinghousecdfi-com-1751034876204',
           messages: newMessages,
           stream: false,
-          max_tokens: 100,
+          max_tokens: 50,
           temperature: 0.7
         })
       });
@@ -91,7 +158,19 @@ REMEMBER: Maximum 3 sentences per response. Be direct and concise.`
       const data = await response.json();
       const botResponse = data.choices[0].message.content;
       
-      setMessages(prev => [...prev, { role: 'assistant', content: botResponse }]);
+      // Check if the bot is asking for contact information
+      if (botResponse.toLowerCase().includes('contact information') || 
+          botResponse.toLowerCase().includes('provide your contact') ||
+          botResponse.toLowerCase().includes('connect you with our team')) {
+        setIsCollectingContact(true);
+        setContactStep('name');
+        setMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: botResponse + ' Let\'s start with your name.' 
+        }]);
+      } else {
+        setMessages(prev => [...prev, { role: 'assistant', content: botResponse }]);
+      }
       
     } catch (error) {
       setIsTyping(false);
@@ -249,7 +328,9 @@ REMEMBER: Maximum 3 sentences per response. Be direct and concise.`
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Type your message... (Press Enter to send, Shift+Enter for new line)"
+                    placeholder={isCollectingContact 
+                      ? `Enter your ${contactStep}...` 
+                      : "Type your message... (Press Enter to send, Shift+Enter for new line)"}
                     className="w-full p-3 border border-gray-300 rounded-xl outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:ring-opacity-20 text-sm resize-none transition-all duration-200"
                     disabled={isTyping}
                     rows={1}
