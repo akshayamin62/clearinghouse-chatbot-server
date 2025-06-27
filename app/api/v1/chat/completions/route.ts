@@ -353,14 +353,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Add sources as metadata if available
-    if (contextData.sources && contextData.sources.length > 0) {
-      interface Source {
-        title: string
-        url: string
-      }
+    // if (contextData.sources && contextData.sources.length > 0) {
+    //   interface Source {
+    //     title: string
+    //     url: string
+    //   }
       
-      completion.choices[0].message.content += `\n\n**Sources:**\n${contextData.sources.map((s: Source) => `- [${s.title}](${s.url})`).join('\n')}`
-    }
+    //   completion.choices[0].message.content += `\n\n**Sources:**\n${contextData.sources.map((s: Source) => `- [${s.title}](${s.url})`).join('\n')}`
+    // }
 
     return NextResponse.json(completion, {
       headers: {
