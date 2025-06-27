@@ -177,10 +177,9 @@ export default function ChatWidgetPage() {
                       {message.role === 'user' ? (
                         <p className="text-sm leading-relaxed">{message.content}</p>
                       ) : (
-                        <div className="text-sm leading-relaxed prose prose-sm max-w-none">
+                        <div className="text-sm leading-relaxed prose prose-sm max-w-none markdown-content">
                           <ReactMarkdown 
                             remarkPlugins={[remarkGfm]}
-                            className="markdown-content"
                             components={{
                               p: ({children}) => <p className="mb-2 last:mb-0">{children}</p>,
                               strong: ({children}) => <strong className="font-semibold text-gray-900">{children}</strong>,
