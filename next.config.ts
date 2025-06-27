@@ -20,7 +20,6 @@ const nextConfig: NextConfig = {
     ],
   },
   // Production optimizations
-  output: 'standalone',
   serverExternalPackages: ['@mendable/firecrawl-js'],
 };
 
