@@ -375,7 +375,8 @@ export async function POST(request: NextRequest) {
         error: {
           message: error instanceof Error ? error.message : 'Failed to process chat completion',
           type: 'server_error',
-          code: 500
+          code: 500,
+          error: error
         }
       },
       { 
