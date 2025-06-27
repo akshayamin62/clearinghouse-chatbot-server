@@ -18,6 +18,8 @@ export default function ChatWidgetPage() {
 
 - Be Concise: Respond succinctly, addressing one topic at most. Use very simple and basic language and be positive and happy.
 
+- Try to give the user only the specific information they asked for. Don't include extra or unrelated details.
+
 - Embrace Variety: Use diverse language and rephrasing to enhance clarity without repeating content.
 
 - Be Conversational: Use everyday language, making the chat feel like talking to a friend.
