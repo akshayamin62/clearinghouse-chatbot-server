@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { Send, User, Bot, Phone, UserIcon } from 'lucide-react';
+import { Send, User, Bot, Phone, UserIcon, X, MessageCircle } from 'lucide-react';
 
 interface Message {
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
 }
@@ -15,11 +15,12 @@ interface ContactInfo {
   phone: string;
 }
 
-export default function FullChatPage() {
+export default function ContactWidgetPage() {
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Hi! I\'m your Clearinghouse CDFI assistant. I can help you with information about our lending programs, community development initiatives, and more. How can I assist you today?',
+      content: 'Hi! I\'m your Clearinghouse CDFI assistant. How can I help you today?',
       timestamp: new Date()
     }
   ]);
@@ -56,6 +57,37 @@ export default function FullChatPage() {
     setMessages(prev => [...prev, newMessage]);
   };
 
+  // Check if user input is contact-related
+  const isContactRequest = (userInput: string): boolean => {
+    const contactTriggers = [
+      'contact',
+      'call me',
+      'phone me',
+      'reach out',
+      'get in touch',
+      'speak to someone',
+      'talk to someone',
+      'human help',
+      'representative',
+      'agent',
+      'team member',
+      'callback',
+      'call back',
+      'need help',
+      'assistance',
+      'support',
+      'more information',
+      'info',
+      'details',
+      'consultation',
+      'meeting',
+      'appointment'
+    ];
+    
+    const lowerInput = userInput.toLowerCase();
+    return contactTriggers.some(trigger => lowerInput.includes(trigger));
+  };
+
   const handleContactCollection = async (userInput: string) => {
     const trimmedInput = userInput.trim();
     
@@ -65,7 +97,6 @@ export default function FullChatPage() {
       addMessage('assistant', `Nice to meet you, ${trimmedInput}! What's your email address?`);
       setContactStep('email');
     } else if (contactStep === 'email') {
-      // Simple email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(trimmedInput)) {
         addMessage('user', trimmedInput);
@@ -78,7 +109,6 @@ export default function FullChatPage() {
       addMessage('assistant', 'Great! And what\'s your phone number?');
       setContactStep('phone');
     } else if (contactStep === 'phone') {
-      // Simple phone validation
       const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
       const cleanPhone = trimmedInput.replace(/[\s\-\(\)]/g, '');
       if (!phoneRegex.test(cleanPhone) && cleanPhone.length < 10) {
@@ -102,13 +132,13 @@ export default function FullChatPage() {
         });
         
         if (response.ok) {
-          addMessage('assistant', '🎉 Perfect! I\'ve got your contact information. Our team will reach out to you within 24 hours. Is there anything else I can help you with in the meantime?');
+          addMessage('assistant', '🎉 Perfect! Our team will reach out to you within 24 hours. Is there anything else I can help you with?');
         } else {
-          addMessage('assistant', 'I received your contact information. Our team will be in touch soon! How else can I assist you?');
+          addMessage('assistant', 'Got your information! Our team will be in touch soon. How else can I assist you?');
         }
       } catch (error) {
         console.error('Error submitting contact info:', error);
-        addMessage('assistant', 'I\'ve noted your contact information. Our team will reach out to you soon! What else can I help you with?');
+        addMessage('assistant', 'I\'ve noted your contact information. Our team will reach out to you soon!');
       }
       
       // Reset contact collection
@@ -116,25 +146,6 @@ export default function FullChatPage() {
       setContactStep('name');
       setContactInfo({ name: '', email: '', phone: '' });
     }
-  };
-
-  const checkForContactTriggers = (botResponse: string): boolean => {
-    const triggers = [
-      'contact information',
-      'provide your contact',
-      'connect you with our team',
-      'someone reach out',
-      'contact you',
-      'get in touch',
-      'speak to someone',
-      'talk to our team',
-      'human assistance',
-      'more information',
-      'follow up'
-    ];
-    
-    const lowerResponse = botResponse.toLowerCase();
-    return triggers.some(trigger => lowerResponse.includes(trigger));
   };
 
   const sendMessage = async () => {
@@ -151,25 +162,25 @@ export default function FullChatPage() {
 
     // Add user message
     addMessage('user', userMessage);
+
+    // Check if it's a contact request - trigger contact form directly
+    if (isContactRequest(userMessage)) {
+      setIsCollectingContact(true);
+      setContactStep('name');
+      addMessage('assistant', 'I\'d be happy to have someone from our team contact you! Let\'s start with your name.');
+      return;
+    }
+
+    // For other questions, use the API
     setIsLoading(true);
 
     try {
-      // Create messages array for API
       const apiMessages = [
         {
           role: 'system',
-          content: `You are a helpful Clearinghouse CDFI assistant. You help users with questions about:
-- Community development financial institution services
-- Loan programs and financing options
-- Application processes and eligibility
-- Impact investing and community development
-- Small business lending and real estate financing
-
-When users ask for help, want to speak to someone, need more information, or want to be contacted, respond with: "I'd be happy to connect you with our team! Let me get your contact information."
-
-Keep responses informative but concise (under 100 words when possible).`
+          content: `You are a helpful Clearinghouse CDFI assistant. Keep responses under 50 words. If users need more detailed help, suggest they contact your team.`
         },
-        ...messages.filter(m => m.role !== 'system').map(m => ({
+        ...messages.map(m => ({
           role: m.role,
           content: m.content
         })),
@@ -199,19 +210,11 @@ Keep responses informative but concise (under 100 words when possible).`
       const data = await response.json();
       const botResponse = data.choices[0].message.content;
       
-      // Add bot response
       addMessage('assistant', botResponse);
-      
-      // Check if we should start contact collection
-      if (checkForContactTriggers(botResponse)) {
-        setIsCollectingContact(true);
-        setContactStep('name');
-        addMessage('assistant', 'Let\'s start with your name.');
-      }
       
     } catch (error) {
       console.error('Error:', error);
-      addMessage('assistant', 'I apologize, but I\'m having trouble connecting right now. Please try again in a moment, or if you need immediate assistance, you can contact our team directly.');
+      addMessage('assistant', 'I\'m having trouble connecting. Would you like me to have someone contact you instead?');
     } finally {
       setIsLoading(false);
     }
@@ -230,103 +233,124 @@ Keep responses informative but concise (under 100 words when possible).`
     addMessage('assistant', 'I\'d be happy to have someone from our team contact you! Let\'s start with your name.');
   };
 
+  const toggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">Clearinghouse CDFI</h1>
-              <p className="text-gray-600">Community Development Financial Institution</p>
-            </div>
-            <button
-              onClick={triggerContactForm}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-            >
-              <Phone size={16} />
-              Contact Us
-            </button>
-          </div>
+      {/* Main Content */}
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-5xl font-bold text-gray-800 mb-4">
+            Clearinghouse CDFI
+          </h1>
+          <p className="text-xl text-gray-600 mb-8">
+            Community Development Financial Institution
+          </p>
+          <p className="text-gray-500">
+            Need help? Click the chat button in the bottom-right corner!
+          </p>
         </div>
       </div>
 
-      {/* Chat Container */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          
-          {/* Messages Area */}
-          <div className="h-[600px] overflow-y-auto p-6 space-y-4">
-            {messages.map((message, index) => (
-              <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`flex items-start gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                  
-                  {/* Avatar */}
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    message.role === 'user' 
-                      ? 'bg-orange-500 text-white' 
-                      : 'bg-blue-500 text-white'
-                  }`}>
-                    {message.role === 'user' ? <User size={16} /> : <Bot size={16} />}
-                  </div>
-                  
-                  {/* Message Content */}
-                  <div className={`rounded-lg p-4 ${
-                    message.role === 'user'
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    <p className="text-sm leading-relaxed">{message.content}</p>
-                    <p className={`text-xs mt-2 opacity-70`}>
-                      {formatTime(message.timestamp)}
-                    </p>
-                  </div>
+      {/* Floating Chat Widget - Bottom Right */}
+      <div className="fixed bottom-6 right-6 z-50">
+        
+        {/* Chat Window */}
+        {isChatOpen && (
+          <div className="absolute bottom-20 right-0 w-96 h-[500px] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300 border border-gray-200">
+            
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                  <Bot size={16} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm">Clearinghouse CDFI</h3>
+                  <p className="text-xs text-blue-100">Ask me anything or request contact</p>
                 </div>
               </div>
-            ))}
-            
-            {/* Loading indicator */}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="flex items-start gap-3 max-w-[80%]">
-                  <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center">
-                    <Bot size={16} />
-                  </div>
-                  <div className="bg-gray-100 rounded-lg p-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-75" />
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-150" />
+              <button
+                onClick={toggleChat}
+                className="text-white hover:text-blue-200 transition-colors p-1 rounded-full hover:bg-white hover:bg-opacity-20"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+              {messages.map((message, index) => (
+                <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`flex items-start gap-2 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                    
+                    {/* Avatar */}
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      message.role === 'user' 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-gray-600 text-white'
+                    }`}>
+                      {message.role === 'user' ? <User size={14} /> : <Bot size={14} />}
+                    </div>
+                    
+                    {/* Message Content */}
+                    <div className={`rounded-lg p-3 ${
+                      message.role === 'user'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-white text-gray-800 shadow-sm border'
+                    }`}>
+                      <p className="text-sm leading-relaxed">{message.content}</p>
+                      <p className={`text-xs mt-1 opacity-70`}>
+                        {formatTime(message.timestamp)}
+                      </p>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
-            
-            {/* Contact collection indicator */}
-            {isCollectingContact && (
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <div className="flex items-center gap-2 text-orange-700">
-                  <UserIcon size={16} />
-                  <span className="font-medium">
-                    Collecting Contact Information - Step {contactStep === 'name' ? '1' : contactStep === 'email' ? '2' : '3'} of 3
-                  </span>
+              ))}
+              
+              {/* Loading indicator */}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="flex items-start gap-2 max-w-[85%]">
+                    <div className="w-7 h-7 rounded-full bg-gray-600 text-white flex items-center justify-center">
+                      <Bot size={14} />
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border shadow-sm">
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-75" />
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-150" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-sm text-orange-600 mt-1">
-                  {contactStep === 'name' && 'Please provide your full name'}
-                  {contactStep === 'email' && 'Please provide your email address'}
-                  {contactStep === 'phone' && 'Please provide your phone number'}
-                </p>
-              </div>
-            )}
-            
-            <div ref={messagesEndRef} />
-          </div>
+              )}
+              
+              {/* Contact collection indicator */}
+              {isCollectingContact && (
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2 text-orange-700">
+                    <UserIcon size={14} />
+                    <span className="font-medium text-sm">
+                      Contact Info - Step {contactStep === 'name' ? '1' : contactStep === 'email' ? '2' : '3'}/3
+                    </span>
+                  </div>
+                  <p className="text-xs text-orange-600 mt-1">
+                    {contactStep === 'name' && 'Please provide your full name'}
+                    {contactStep === 'email' && 'Please provide your email address'}
+                    {contactStep === 'phone' && 'Please provide your phone number'}
+                  </p>
+                </div>
+              )}
+              
+              <div ref={messagesEndRef} />
+            </div>
 
-          {/* Input Area */}
-          <div className="border-t border-gray-200 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex-1 relative">
+            {/* Input Area */}
+            <div className="border-t border-gray-200 p-3 bg-white">
+              <div className="flex items-center gap-2">
                 <input
                   type="text"
                   value={inputValue}
@@ -335,52 +359,61 @@ Keep responses informative but concise (under 100 words when possible).`
                   placeholder={
                     isCollectingContact 
                       ? `Enter your ${contactStep}...`
-                      : "Ask me about loans, programs, or how we can help..."
+                      : "Ask about loans or type 'contact me'..."
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   disabled={isLoading}
                 />
+                <button
+                  onClick={sendMessage}
+                  disabled={isLoading || !inputValue.trim()}
+                  className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white p-2 rounded-lg transition-colors duration-200"
+                >
+                  <Send size={16} />
+                </button>
               </div>
-              <button
-                onClick={sendMessage}
-                disabled={isLoading || !inputValue.trim()}
-                className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white p-3 rounded-lg transition-colors duration-200"
-              >
-                <Send size={18} />
-              </button>
+              
+              {/* Quick action buttons */}
+              {!isCollectingContact && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  <button
+                    onClick={() => setInputValue("What loans do you offer?")}
+                    className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs transition-colors"
+                  >
+                    Loans
+                  </button>
+                  <button
+                    onClick={() => setInputValue("Contact me")}
+                    className="px-2 py-1 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded text-xs transition-colors"
+                  >
+                    Contact Me
+                  </button>
+                  <button
+                    onClick={() => setInputValue("How to apply?")}
+                    className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs transition-colors"
+                  >
+                    Apply
+                  </button>
+                </div>
+              )}
             </div>
-            
-            {/* Quick action buttons */}
-            {!isCollectingContact && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button
-                  onClick={() => setInputValue("What loan programs do you offer?")}
-                  className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm transition-colors"
-                >
-                  Loan Programs
-                </button>
-                <button
-                  onClick={() => setInputValue("How do I apply for financing?")}
-                  className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm transition-colors"
-                >
-                  Application Process
-                </button>
-                <button
-                  onClick={() => setInputValue("I need help with my business")}
-                  className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm transition-colors"
-                >
-                  Business Help
-                </button>
-                <button
-                  onClick={triggerContactForm}
-                  className="px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-full text-sm transition-colors"
-                >
-                  Contact Team
-                </button>
-              </div>
-            )}
           </div>
-        </div>
+        )}
+
+        {/* Chat Toggle Button */}
+        <button
+          onClick={toggleChat}
+          className="w-16 h-16 bg-blue-500 hover:bg-blue-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group hover:scale-110"
+        >
+          <MessageCircle className="w-6 h-6 text-white" />
+        </button>
+        
+        {/* Notification Badge (optional) */}
+        {!isChatOpen && (
+          <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold animate-pulse">
+            💬
+          </div>
+        )}
       </div>
     </div>
   );
