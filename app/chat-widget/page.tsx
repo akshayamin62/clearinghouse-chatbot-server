@@ -144,7 +144,7 @@ STRICT LIMIT: 15 words maximum!`
           model: 'firecrawl-www-clearinghousecdfi-com-1751034876204',
           messages: newMessages,
           stream: false,
-          max_tokens: 50,
+          max_tokens: 10,
           temperature: 0.7
         })
       });
