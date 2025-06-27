@@ -253,50 +253,50 @@ export default function ContactWidgetPage() {
         
         {/* Chat Window */}
         {isChatOpen && (
-          <div className="absolute bottom-20 right-0 w-96 h-[500px] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300 border border-gray-200">
+          <div className="absolute bottom-20 right-0 w-96 h-[520px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300 border border-gray-100">
             
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-5 flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                  <Bot size={16} />
+                <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                  <Bot size={18} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm">Clearinghouse CDFI</h3>
-                  <p className="text-xs text-blue-100">Ask me anything or request contact</p>
+                  <h3 className="font-bold text-sm">Clearinghouse CDFI</h3>
+                  <p className="text-xs text-orange-100 font-medium">Community Lending Assistant</p>
                 </div>
               </div>
               <button
                 onClick={toggleChat}
-                className="text-white hover:text-blue-200 transition-colors p-1 rounded-full hover:bg-white hover:bg-opacity-20"
+                className="text-white hover:text-orange-200 transition-all duration-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20 hover:scale-105"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-gradient-to-b from-gray-50 to-gray-100">
               {messages.map((message, index) => (
                 <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex items-start gap-2 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                  <div className={`flex items-start gap-3 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
                     
                     {/* Avatar */}
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-md ${
                       message.role === 'user' 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-gray-600 text-white'
+                        ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white' 
+                        : 'bg-gradient-to-br from-gray-600 to-gray-700 text-white'
                     }`}>
                       {message.role === 'user' ? <User size={14} /> : <Bot size={14} />}
                     </div>
                     
                     {/* Message Content */}
-                    <div className={`rounded-lg p-3 ${
+                    <div className={`rounded-2xl p-4 shadow-sm ${
                       message.role === 'user'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-white text-gray-800 shadow-sm border'
+                        ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white'
+                        : 'bg-white text-gray-800 border border-gray-200'
                     }`}>
-                      <p className="text-sm leading-relaxed">{message.content}</p>
-                      <p className={`text-xs mt-1 opacity-70`}>
+                      <p className="text-sm leading-relaxed font-medium">{message.content}</p>
+                      <p className={`text-xs mt-2 ${message.role === 'user' ? 'text-orange-100' : 'text-gray-500'}`}>
                         {formatTime(message.timestamp)}
                       </p>
                     </div>
@@ -307,15 +307,15 @@ export default function ContactWidgetPage() {
               {/* Loading indicator */}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="flex items-start gap-2 max-w-[85%]">
-                    <div className="w-7 h-7 rounded-full bg-gray-600 text-white flex items-center justify-center">
+                  <div className="flex items-start gap-3 max-w-[85%]">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 text-white flex items-center justify-center shadow-md">
                       <Bot size={14} />
                     </div>
-                    <div className="bg-white rounded-lg p-3 border shadow-sm">
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-75" />
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-150" />
+                    <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" />
+                        <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce delay-75" />
+                        <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce delay-150" />
                       </div>
                     </div>
                   </div>
@@ -324,14 +324,16 @@ export default function ContactWidgetPage() {
               
               {/* Contact collection indicator */}
               {isCollectingContact && (
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                  <div className="flex items-center gap-2 text-orange-700">
-                    <UserIcon size={14} />
-                    <span className="font-medium text-sm">
-                      Contact Info - Step {contactStep === 'name' ? '1' : contactStep === 'email' ? '2' : '3'}/3
+                <div className="bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center gap-3 text-orange-700">
+                    <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                      <UserIcon size={12} className="text-white" />
+                    </div>
+                    <span className="font-semibold text-sm">
+                      Contact Information - Step {contactStep === 'name' ? '1' : contactStep === 'email' ? '2' : '3'} of 3
                     </span>
                   </div>
-                  <p className="text-xs text-orange-600 mt-1">
+                  <p className="text-sm text-orange-600 mt-2 ml-9 font-medium">
                     {contactStep === 'name' && 'Please provide your full name'}
                     {contactStep === 'email' && 'Please provide your email address'}
                     {contactStep === 'phone' && 'Please provide your phone number'}
@@ -343,8 +345,8 @@ export default function ContactWidgetPage() {
             </div>
 
             {/* Input Area */}
-            <div className="border-t border-gray-200 p-3 bg-white">
-              <div className="flex items-center gap-2">
+            <div className="border-t border-gray-200 p-4 bg-white">
+              <div className="flex items-center gap-3">
                 <input
                   type="text"
                   value={inputValue}
@@ -355,13 +357,13 @@ export default function ContactWidgetPage() {
                       ? `Enter your ${contactStep}...`
                       : "Ask about loans or type 'contact me'..."
                   }
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm font-medium placeholder-gray-400 shadow-sm"
                   disabled={isLoading}
                 />
                 <button
                   onClick={sendMessage}
                   disabled={isLoading || !inputValue.trim()}
-                  className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white p-2 rounded-lg transition-colors duration-200"
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-gray-300 disabled:to-gray-400 text-white p-3 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 disabled:scale-100"
                 >
                   <Send size={16} />
                 </button>
@@ -369,24 +371,24 @@ export default function ContactWidgetPage() {
               
               {/* Quick action buttons */}
               {!isCollectingContact && (
-                <div className="mt-2 flex flex-wrap gap-1">
+                <div className="mt-3 flex flex-wrap gap-2">
                   <button
                     onClick={() => setInputValue("What loans do you offer?")}
-                    className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs transition-colors"
+                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all duration-200 hover:shadow-sm"
                   >
-                    Loans
+                    💰 Loans
                   </button>
                   <button
                     onClick={() => setInputValue("Contact me")}
-                    className="px-2 py-1 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded text-xs transition-colors"
+                    className="px-3 py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-xl text-xs font-medium transition-all duration-200 hover:shadow-sm"
                   >
-                    Contact Me
+                    📞 Contact Me
                   </button>
                   <button
                     onClick={() => setInputValue("How to apply?")}
-                    className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs transition-colors"
+                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all duration-200 hover:shadow-sm"
                   >
-                    Apply
+                    📋 Apply
                   </button>
                 </div>
               )}
@@ -397,17 +399,10 @@ export default function ContactWidgetPage() {
         {/* Chat Toggle Button */}
         <button
           onClick={toggleChat}
-          className="w-16 h-16 bg-blue-500 hover:bg-blue-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group hover:scale-110"
+          className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center group hover:scale-110 active:scale-95"
         >
-          <MessageCircle className="w-6 h-6 text-white" />
+          <MessageCircle className="w-6 h-6 text-white group-hover:scale-110 transition-transform duration-200" />
         </button>
-        
-        {/* Notification Badge (optional) */}
-        {!isChatOpen && (
-          <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold animate-pulse">
-            💬
-          </div>
-        )}
       </div>
     </div>
   );
