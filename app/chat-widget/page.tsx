@@ -138,7 +138,7 @@ STRICT LIMIT: 15 words maximum!`
       const response = await fetch('https://clearinghouse-chatbot-server.vercel.app/api/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           model: 'firecrawl-www-clearinghousecdfi-com-1751034876204',
@@ -161,7 +161,13 @@ STRICT LIMIT: 15 words maximum!`
       // Check if the bot is asking for contact information
       if (botResponse.toLowerCase().includes('contact information') || 
           botResponse.toLowerCase().includes('provide your contact') ||
-          botResponse.toLowerCase().includes('connect you with our team')) {
+          botResponse.toLowerCase().includes('connect you with our team') ||
+          botResponse.toLowerCase().includes('someone reach out') ||
+          botResponse.toLowerCase().includes('contact you') ||
+          botResponse.toLowerCase().includes('get in touch') ||
+          botResponse.toLowerCase().includes('speak to') ||
+          botResponse.toLowerCase().includes('talk to') ||
+          botResponse.toLowerCase().includes('human assistance')) {
         setIsCollectingContact(true);
         setContactStep('name');
         setMessages(prev => [...prev, { 
